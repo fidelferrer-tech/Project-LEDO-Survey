@@ -1293,7 +1293,7 @@ function bigConfetti(){
    finished survey sends one row per answered question to the sheet.
    ================================================================ */
 const SUBMIT_TO_SHEET = true; // flip to true once WEB_APP_URL is set
- const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwrd8GESAeirz3RAstdcUuZXuANaH4Wt0jRlhBfb7CpDVKXM5GUb8CCQZPExbjGI-f1/exec";
+ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw_tr9xDhsX5vd8WVPidyYHHLs0drq1RGvuU_4Gl0sG-KSi_7TNcjlQ0u1I41luJPmZ/exec";
 async function submitToSheet(state){
   if(!SUBMIT_TO_SHEET) return { skipped:true };
 
@@ -1874,8 +1874,8 @@ function finishMission(){
 
 /* ---------------- Download answers as CSV ---------------- */
 document.getElementById('downloadBtn').addEventListener('click', ()=>{
-  const headers = ['First name','Last name','D.O.B','Program','School','Gender', ...QUESTIONS.map(q=>`${q.text} [${q.area}]`)];
-  const row = [state.firstName, state.lastName, state.dob, state.program, state.school, state.gender, ...state.answers];
+  const headers = ['First name','Last name','D.O.B','Program','School','Gender', ...QUESTIONS.map(q=>`${q.text} [${q.area}]`), 'Submitted at'];
+  const row = [state.firstName, state.lastName, state.dob, state.program, state.school, state.gender, ...state.answers, new Date().toISOString()];
   const esc = (v)=>`"${String(v).replace(/"/g,'""')}"`;
   const csv = headers.map(esc).join(',') + '\n' + row.map(esc).join(',');
   const blob = new Blob([csv], {type:'text/csv'});
