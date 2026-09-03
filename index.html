@@ -444,7 +444,8 @@
   .field{ width:100%; max-width:380px; text-align:left; margin-top:6px; }
   .field label{ display:block; font-size:0.85rem; color:var(--muted); margin-bottom:6px; font-weight:700; }
   .field input[type=text],
-  .field input[type=date]{
+  .field input[type=date],
+  .field select{
     width:100%;
     padding:14px 16px;
     border-radius:14px;
@@ -457,7 +458,8 @@
     color-scheme: dark;
   }
   .field input[type=text]:focus,
-  .field input[type=date]:focus{ border-color:var(--accent2); transform:scale(1.02); }
+  .field input[type=date]:focus,
+  .field select:focus{ border-color:var(--accent2); transform:scale(1.02); }
 
   .chip-row{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:6px; }
   .chip{
@@ -1032,6 +1034,23 @@
       </div>
 
       <div class="field">
+        <label for="schoolInput">🏫 School</label>
+        <input type="text" id="schoolInput" placeholder="Type your school name...">
+      </div>
+
+      <div class="field">
+        <label for="genderSelect">🌈 Gender</label>
+        <select id="genderSelect">
+          <option value="" disabled selected>Select one...</option>
+          <option value="Girl">Girl</option>
+          <option value="Boy">Boy</option>
+          <option value="Trans">Trans</option>
+          <option value="Non-binary">Non-binary</option>
+          <option value="Rather not say">Rather not say</option>
+        </select>
+      </div>
+
+      <div class="field">
         <label>🛠️ Which mission (program) are you on?</label>
         <div class="chip-row" id="programChips">
           <div class="chip" data-val="Robotics">🤖 Robotics</div>
@@ -1274,19 +1293,23 @@ function bigConfetti(){
    finished survey sends one row per answered question to the sheet.
    ================================================================ */
 const SUBMIT_TO_SHEET = true; // flip to true once WEB_APP_URL is set
- const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyWotJwLupfpba2ZEyx9QrWGxSWDR4j2rHB3zdvAkHAiykzIc2SL9oC8aeb3u-xOk5u/exec";
+ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwrd8GESAeirz3RAstdcUuZXuANaH4Wt0jRlhBfb7CpDVKXM5GUb8CCQZPExbjGI-f1/exec";
 async function submitToSheet(state){
   if(!SUBMIT_TO_SHEET) return { skipped:true };
 
   // One wide row per finished survey: First name, Last name, D.O.B,
-  // Program, then one answer per question in QUESTIONS order — matches
-  // the "Raw responses" tab columns in the linked Google Sheet.
+  // Program, School, Gender, then one answer per question in QUESTIONS
+  // order — matches the "Raw responses" tab columns in the linked
+  // Google Sheet. NOTE: School and Gender columns must be added to the
+  // sheet (and the Apps Script row array) for these to be saved.
   const submittedAt = new Date().toISOString();
   const row = {
     first_name: state.firstName,
     last_name: state.lastName,
     dob: state.dob,
     program: state.program,
+    school: state.school,
+    gender: state.gender,
     answers: state.answers,
     submitted_at: submittedAt
   };
@@ -1452,6 +1475,8 @@ const screens = {
 const firstNameInput = document.getElementById('firstNameInput');
 const lastNameInput = document.getElementById('lastNameInput');
 const dobInput = document.getElementById('dobInput');
+const schoolInput = document.getElementById('schoolInput');
+const genderSelect = document.getElementById('genderSelect');
 const programChips = document.getElementById('programChips');
 const startBtn = document.getElementById('startBtn');
 const zoneEmoji = document.getElementById('zoneEmoji');
@@ -1675,9 +1700,13 @@ startBtn.addEventListener('click', ()=>{
   const fn = firstNameInput.value.trim();
   const ln = lastNameInput.value.trim();
   const dob = dobInput.value;
+  const school = schoolInput.value.trim();
+  const gender = genderSelect.value;
   if(!fn){ firstNameInput.style.borderColor = '#ff6b6b'; firstNameInput.focus(); return; }
   if(!ln){ lastNameInput.style.borderColor = '#ff6b6b'; lastNameInput.focus(); return; }
   if(!dob){ dobInput.style.borderColor = '#ff6b6b'; dobInput.focus(); return; }
+  if(!school){ schoolInput.style.borderColor = '#ff6b6b'; schoolInput.focus(); return; }
+  if(!gender){ genderSelect.style.borderColor = '#ff6b6b'; genderSelect.focus(); return; }
   if(!selectedProgram){
     programChips.style.outline = '2px solid #ff6b6b';
     setTimeout(()=>programChips.style.outline='', 900);
@@ -1686,6 +1715,8 @@ startBtn.addEventListener('click', ()=>{
   state.firstName = fn;
   state.lastName = ln;
   state.dob = dob;
+  state.school = school;
+  state.gender = gender;
   state.name = `${fn} ${ln}`.trim();
   state.program = selectedProgram;
   ZONES = ZONES_BY_PROGRAM[selectedProgram];
@@ -1843,8 +1874,8 @@ function finishMission(){
 
 /* ---------------- Download answers as CSV ---------------- */
 document.getElementById('downloadBtn').addEventListener('click', ()=>{
-  const headers = ['First name','Last name','D.O.B','Program', ...QUESTIONS.map(q=>`${q.text} [${q.area}]`)];
-  const row = [state.firstName, state.lastName, state.dob, state.program, ...state.answers];
+  const headers = ['First name','Last name','D.O.B','Program','School','Gender', ...QUESTIONS.map(q=>`${q.text} [${q.area}]`)];
+  const row = [state.firstName, state.lastName, state.dob, state.program, state.school, state.gender, ...state.answers];
   const esc = (v)=>`"${String(v).replace(/"/g,'""')}"`;
   const csv = headers.map(esc).join(',') + '\n' + row.map(esc).join(',');
   const blob = new Blob([csv], {type:'text/csv'});
@@ -1871,6 +1902,8 @@ document.getElementById('restartBtn').addEventListener('click', ()=>{
   firstNameInput.value = '';
   lastNameInput.value = '';
   dobInput.value = '';
+  schoolInput.value = '';
+  genderSelect.value = '';
   selectedProgram = '';
   document.body.classList.remove('theme-robotics','theme-tech','theme-financial');
   [...programChips.children].forEach(c=>c.classList.remove('selected'));
