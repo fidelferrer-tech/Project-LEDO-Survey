@@ -1047,21 +1047,17 @@
 </div>
 
       <div class="field">
-        <label for="schoolInput">🏫 School</label>
-        <input type="text" id="schoolInput" placeholder="Type your school name...">
-      </div>
-
-      <div class="field">
-        <label for="genderSelect">🌈 Gender</label>
-        <select id="genderSelect">
-          <option value="" disabled selected>Select one...</option>
-          <option value="Girl">Girl</option>
-          <option value="Boy">Boy</option>
-          <option value="Trans">Trans</option>
-          <option value="Non-binary">Non-binary</option>
-          <option value="Rather not say">Rather not say</option>
-        </select>
-      </div>
+          <label for="schoolSelect">🏫 School</label>
+          <select id="schoolSelect">
+            <option value="" disabled selected>Select your school...</option>
+            <option value="KairosPdx">KairosPdx</option>
+            <option value="Sunrise Elementary">Sunrise Elementary</option>
+            <option value="Lent Elementary">Lent Elementary</option>
+            <option value="Iraqi Arabic School">Iraqi Arabic School</option>
+            <option value="Other">Other</option>
+          </select>
+          <input type="text" id="schoolOtherInput" placeholder="Type your school name..." style="display:none; margin-top:8px;">
+        </div>
 
       <div class="field">
         <label>🛠️ Which mission (program) are you on?</label>
@@ -1520,7 +1516,19 @@ function getDobValue(){
   if(!dobMonth.value || !dobDay.value || !dobYear.value) return '';
   return `${dobYear.value}-${dobMonth.value}-${dobDay.value}`;
 }
-const schoolInput = document.getElementById('schoolInput');
+const schoolSelect = document.getElementById('schoolSelect');
+const schoolOtherInput = document.getElementById('schoolOtherInput');
+  
+  schoolSelect.addEventListener('change', ()=>{
+  if(schoolSelect.value === 'Other'){
+    schoolOtherInput.style.display = 'block';
+    schoolOtherInput.value = '';
+    schoolOtherInput.focus();
+  } else {
+    schoolOtherInput.style.display = 'none';
+    schoolOtherInput.value = '';
+  }
+});
 const genderSelect = document.getElementById('genderSelect');
 const programChips = document.getElementById('programChips');
 const startBtn = document.getElementById('startBtn');
@@ -1745,7 +1753,9 @@ startBtn.addEventListener('click', ()=>{
   const fn = firstNameInput.value.trim();
   const ln = lastNameInput.value.trim();
   const dob = getDobValue();
-  const school = schoolInput.value.trim();
+  const school = schoolSelect.value === 'Other'
+    ? schoolOtherInput.value.trim()
+    : schoolSelect.value;
   const gender = genderSelect.value;
   if(!fn){ firstNameInput.style.borderColor = '#ff6b6b'; firstNameInput.focus(); return; }
   if(!ln){ lastNameInput.style.borderColor = '#ff6b6b'; lastNameInput.focus(); return; }
@@ -1756,8 +1766,16 @@ startBtn.addEventListener('click', ()=>{
     dobMonth.focus();
     return;
   }
-  if(!school){ schoolInput.style.borderColor = '#ff6b6b'; schoolInput.focus(); return; }
-  if(!gender){ genderSelect.style.borderColor = '#ff6b6b'; genderSelect.focus(); return; }
+if(!school){
+  schoolSelect.style.borderColor = '#ff6b6b';
+  if(schoolSelect.value === 'Other'){
+    schoolOtherInput.style.borderColor = '#ff6b6b';
+    schoolOtherInput.focus();
+  } else {
+    schoolSelect.focus();
+  }
+  return;
+}  if(!gender){ genderSelect.style.borderColor = '#ff6b6b'; genderSelect.focus(); return; }
   if(!selectedProgram){
     programChips.style.outline = '2px solid #ff6b6b';
     setTimeout(()=>programChips.style.outline='', 900);
