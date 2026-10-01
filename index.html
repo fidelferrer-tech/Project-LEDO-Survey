@@ -1118,8 +1118,6 @@
         <div class="stat" id="certStat">You collected 0 of 0 stars!</div>
       </div>
       <div id="submitStatus" style="min-height:22px; font-weight:700; font-size:0.9rem;"></div>
-      <button class="btn" id="downloadBtn">⬇️ Download My Answers</button>
-      <button class="btn secondary" id="restartBtn">🔁 Play Again</button>
     </div>
 
   </div>
@@ -1914,9 +1912,9 @@ function finishMission(){
           statusEl.style.color = 'var(--good)';
           statusEl.textContent = '✅ Answers sent! Great job!';
         })
-        .catch((err)=>{
+      .catch((err)=>{
           statusEl.style.color = '#ff8080';
-          statusEl.textContent = '⚠️ Could not send automatically — please use Download instead.';
+          statusEl.textContent = '⚠️ Could not send automatically. Please try again or contact Project LEDO.';
           console.error('ArcGIS submit failed:', err);
         });
     } else {
@@ -1924,52 +1922,6 @@ function finishMission(){
     }
   });
 }
-
-/* ---------------- Download answers as CSV ---------------- */
-document.getElementById('downloadBtn').addEventListener('click', ()=>{
-  const headers = ['First name','Last name','D.O.B','Program','School','Gender', ...QUESTIONS.map(q=>`${q.text} [${q.area}]`), 'Submitted at'];
-  const row = [state.firstName, state.lastName, state.dob, state.program, state.school, state.gender, ...state.answers, new Date().toISOString()];
-  const esc = (v)=>`"${String(v).replace(/"/g,'""')}"`;
-  const csv = headers.map(esc).join(',') + '\n' + row.map(esc).join(',');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `TeamLedo_${state.program.replace(/\s+/g,'_')}_${state.name.replace(/\s+/g,'_')}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-});
-
-document.getElementById('restartBtn').addEventListener('click', ()=>{
-  QUESTIONS = [];
-  state = { firstName:'', lastName:'', dob:'', name:'', program:'', current:-1, answers:[], stars:0, coins:0 };
-  coinTotalEl.textContent = 0;
-  milestonesHit = {};
-  milestoneBanner.classList.remove('show');
-  MAX_STARS = 0;
-  starDisplayVal = 0;
-  shownZones = new Set();
-  document.getElementById('starMax').textContent = MAX_STARS;
-  firstNameInput.value = '';
-  lastNameInput.value = '';
-  dobMonth.value = '';
-  dobDay.value = '';
-  dobYear.value = '';
-  schoolInput.value = '';
-  genderSelect.value = '';
-  selectedProgram = '';
-  document.body.classList.remove('theme-robotics','theme-tech','theme-financial');
-  [...programChips.children].forEach(c=>c.classList.remove('selected'));
-  zonePips.innerHTML = '';
-  companionCurrentLevel = -1;
-  MAX_STARS = 1;
-  updateCompanionLevel();
-  companionCurrentLevel = -1;
-  showScreen('intro');
-  updateProgress();
-});
 
 updateProgress();
 updateCompanionLevel();
