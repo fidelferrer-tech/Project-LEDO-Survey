@@ -1295,14 +1295,12 @@ function bigConfetti(){
 const SUBMIT_TO_SHEET = true; // flip to true once WEB_APP_URL is set
  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw_tr9xDhsX5vd8WVPidyYHHLs0drq1RGvuU_4Gl0sG-KSi_7TNcjlQ0u1I41luJPmZ/exec";
 async function submitToSheet(state){
-  if(!SUBMIT_TO_SHEET) return { skipped:true };
+  if(!SUBMIT_TO_SHEET){
+    return { skipped:true };
+  }
 
-  // One wide row per finished survey: First name, Last name, D.O.B,
-  // Program, School, Gender, then one answer per question in QUESTIONS
-  // order — matches the "Raw responses" tab columns in the linked
-  // Google Sheet. NOTE: School and Gender columns must be added to the
-  // sheet (and the Apps Script row array) for these to be saved.
   const submittedAt = new Date().toISOString();
+
   const row = {
     first_name: state.firstName,
     last_name: state.lastName,
@@ -1314,18 +1312,31 @@ async function submitToSheet(state){
     submitted_at: submittedAt
   };
 
-  const res = await fetch(WEB_APP_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight on Apps Script
-    body: JSON.stringify(row)
-  });
-  const data = await res.json();
+  console.log("Submitting survey:", row);
+  console.log("Web app URL:", WEB_APP_URL);
 
-  if(!data || data.ok !== true){
-    const msg = (data && data.error) || "Unknown error";
-    throw new Error(msg);
+  try {
+    const res = await fetch(WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(row)
+    });
+
+    console.log("Fetch completed:", res);
+    console.log("Fetch type:", res.type);
+    console.log("Fetch status:", res.status);
+
+    return { ok:true };
+
+  } catch(err) {
+    console.error("Survey submission FAILED:", err);
+    console.error("Error name:", err.name);
+    console.error("Error message:", err.message);
+    throw err;
   }
-  return data;
 }
 
 /* ---------------- Zone (Area) metadata — one themed emoji set per mission ---------------- */
