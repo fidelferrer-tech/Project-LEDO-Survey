@@ -457,9 +457,12 @@
     transition:border .2s, transform .2s;
     color-scheme: dark;
   }
-  .field input[type=text]:focus,
-  .field input[type=date]:focus,
-  .field select:focus{ border-color:var(--accent2); transform:scale(1.02); }
+.field input[type=text]:focus,
+.field input[type=date]:focus,
+.field select:focus{ border-color:var(--accent2); transform:scale(1.02); }
+
+.dob-row{ display:flex; gap:8px; }
+.dob-row select{ width:auto; flex:1; min-width:0; }
 
   .chip-row{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:6px; }
   .chip{
@@ -1028,10 +1031,20 @@
         <input type="text" id="lastNameInput" placeholder="Type your last name...">
       </div>
 
-      <div class="field">
-        <label for="dobInput">🎂 Date of birth</label>
-        <input type="date" id="dobInput">
-      </div>
+<div class="field">
+  <label>🎂 Date of birth</label>
+  <div class="dob-row">
+    <select id="dobMonth" aria-label="Birth month">
+      <option value="" disabled selected>Month</option>
+    </select>
+    <select id="dobDay" aria-label="Birth day">
+      <option value="" disabled selected>Day</option>
+    </select>
+    <select id="dobYear" aria-label="Birth year">
+      <option value="" disabled selected>Year</option>
+    </select>
+  </div>
+</div>
 
       <div class="field">
         <label for="schoolInput">🏫 School</label>
@@ -1476,7 +1489,39 @@ const screens = {
 };
 const firstNameInput = document.getElementById('firstNameInput');
 const lastNameInput = document.getElementById('lastNameInput');
-const dobInput = document.getElementById('dobInput');
+const dobMonth = document.getElementById('dobMonth');
+const dobDay = document.getElementById('dobDay');
+const dobYear = document.getElementById('dobYear');
+(function populateDobDropdowns(){
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  MONTHS.forEach((name, i)=>{
+    const num = String(i+1).padStart(2,'0');
+    const opt = document.createElement('option');
+    opt.value = num;
+    opt.textContent = `${num} - ${name}`;
+    dobMonth.appendChild(opt);
+  });
+
+  for(let d=1; d<=31; d++){
+    const opt = document.createElement('option');
+    opt.value = String(d).padStart(2,'0');
+    opt.textContent = String(d);
+    dobDay.appendChild(opt);
+  }
+
+  const thisYear = new Date().getFullYear();
+  for(let y=thisYear; y>=thisYear-25; y--){
+    const opt = document.createElement('option');
+    opt.value = String(y);
+    opt.textContent = String(y);
+    dobYear.appendChild(opt);
+  }
+})();
+function getDobValue(){
+  if(!dobMonth.value || !dobDay.value || !dobYear.value) return '';
+  return `${dobYear.value}-${dobMonth.value}-${dobDay.value}`;
+}
 const schoolInput = document.getElementById('schoolInput');
 const genderSelect = document.getElementById('genderSelect');
 const programChips = document.getElementById('programChips');
@@ -1701,12 +1746,18 @@ function updateProgress(){
 startBtn.addEventListener('click', ()=>{
   const fn = firstNameInput.value.trim();
   const ln = lastNameInput.value.trim();
-  const dob = dobInput.value;
+  const dob = getDobValue();
   const school = schoolInput.value.trim();
   const gender = genderSelect.value;
   if(!fn){ firstNameInput.style.borderColor = '#ff6b6b'; firstNameInput.focus(); return; }
   if(!ln){ lastNameInput.style.borderColor = '#ff6b6b'; lastNameInput.focus(); return; }
-  if(!dob){ dobInput.style.borderColor = '#ff6b6b'; dobInput.focus(); return; }
+  if(!dob){
+    dobMonth.style.borderColor = '#ff6b6b';
+    dobDay.style.borderColor = '#ff6b6b';
+    dobYear.style.borderColor = '#ff6b6b';
+    dobMonth.focus();
+    return;
+  }
   if(!school){ schoolInput.style.borderColor = '#ff6b6b'; schoolInput.focus(); return; }
   if(!gender){ genderSelect.style.borderColor = '#ff6b6b'; genderSelect.focus(); return; }
   if(!selectedProgram){
@@ -1903,7 +1954,9 @@ document.getElementById('restartBtn').addEventListener('click', ()=>{
   document.getElementById('starMax').textContent = MAX_STARS;
   firstNameInput.value = '';
   lastNameInput.value = '';
-  dobInput.value = '';
+  dobMonth.value = '';
+  dobDay.value = '';
+  dobYear.value = '';
   schoolInput.value = '';
   genderSelect.value = '';
   selectedProgram = '';
