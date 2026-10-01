@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Updated October 1, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1058,6 +1059,18 @@
           </select>
           <input type="text" id="schoolOtherInput" placeholder="Type your school name..." style="display:none; margin-top:8px;">
         </div>
+      <div class="field">
+        <label for="genderSelect">⚧️ Gender</label>
+        <select id="genderSelect">
+          <option value="" disabled selected>Select your gender...</option>
+          <option value="Female">Female</option>
+          <option value="Male">Male</option>
+          <option value="Non-binary">Non-binary</option>
+          <option value="Prefer not to say">Prefer not to say</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      
 
       <div class="field">
         <label>🛠️ Which mission (program) are you on?</label>
@@ -1775,7 +1788,9 @@ if(!school){
     schoolSelect.focus();
   }
   return;
-}  if(!gender){ genderSelect.style.borderColor = '#ff6b6b'; genderSelect.focus(); return; }
+}  
+  
+  if(!gender){ genderSelect.style.borderColor = '#ff6b6b'; genderSelect.focus(); return; }
   if(!selectedProgram){
     programChips.style.outline = '2px solid #ff6b6b';
     setTimeout(()=>programChips.style.outline='', 900);
