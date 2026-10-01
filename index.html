@@ -1757,8 +1757,6 @@ const school = schoolSelect.value === 'Other'
   ? schoolOtherInput.value.trim()
   : schoolSelect.value;
 const gender = genderSelect.value;
-
-alert(`fn="${fn}"\nln="${ln}"\ndob="${dob}"\nschool="${school}"\ngender="${gender}"\nprogram="${selectedProgram}"`);
   if(!fn){ firstNameInput.style.borderColor = '#ff6b6b'; firstNameInput.focus(); return; }
   if(!ln){ lastNameInput.style.borderColor = '#ff6b6b'; lastNameInput.focus(); return; }
   if(!dob){
